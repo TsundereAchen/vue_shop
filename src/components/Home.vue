@@ -17,6 +17,8 @@
           :collapse="isCollapse"
           :collapse-transition='false'
           unique-opened
+          router
+          :default-active ="activeUrl"
         >
           <el-submenu
             :index="item.id + ''"
@@ -28,9 +30,10 @@
               <span>{{ item.authName }}</span>
             </template>
             <el-menu-item
-              :index="d.id + ''"
+              :index="'/'+d.path"
               v-for="d in item.children"
               :key="d.id"
+              @click="activeUrlClick('/'+d.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -41,7 +44,9 @@
         </el-menu>
       </el-aside>
 
-      <el-main>Main</el-main>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -59,6 +64,7 @@ export default {
         145: 'el-icon-s-claim',
       },
       isCollapse: false,
+      activeUrl: ''
     }
   },
   methods: {
@@ -74,9 +80,14 @@ export default {
     toggleCollapse() {
       this.isCollapse = !this.isCollapse
     },
+    activeUrlClick(path) {
+      sessionStorage.setItem('activeUrl', path)
+      this.activeUrl = sessionStorage.getItem('activeUrl')
+    }
   },
   created() {
     this.requestList()
+    this.activeUrl = sessionStorage.getItem('activeUrl')
   },
 }
 </script>
@@ -116,6 +127,9 @@ export default {
 }
 .el-aside {
   background-color: #333744;
+}
+.el-menu {
+  border-right: 0;
 }
 .el-main {
   background-color: #eaedf1;
