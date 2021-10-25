@@ -51,6 +51,7 @@
               type="danger"
               icon="el-icon-share"
               size="mini"
+              @click="setRoleUser(scope.row)"
             ></el-button>
             <el-button
               type="warning"
@@ -149,8 +150,28 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button @click="updateDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="updateUsers">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog title="分配权限" :visible.sync="setRoleDialogVisible">
+      <p>姓名：{{ roleInfo.username }}</p>
+      <p>角色名：{{ roleInfo.role_name }}</p>
+      <p>
+        修改权限：<el-select v-model="curSelRoleId" placeholder="请选择">
+          <el-option
+            v-for="item in setRoleList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id"
+          >
+          </el-option
+        ></el-select>
+      </p>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="confirmRole">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -174,6 +195,12 @@ export default {
 
     return {
       tableData: [],
+      setRoleList: [],
+      curSelRoleId: '',
+      roleInfo: {
+        username: '',
+        role_name: ''
+      },
       userInfo: {
         query: '',
         // 当前页数
@@ -186,6 +213,7 @@ export default {
       // 添加用户弹窗显示
       addDialogVisible: false,
       updateDialogVisible: false,
+      setRoleDialogVisible: false,
       addForm: {
         username: '',
         password: '',
@@ -252,6 +280,7 @@ export default {
         if (!vaild) return
         const { data: res } = await this.$http.post('users', this.addForm)
         if (res.meta.status != 201) return this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg)
         this.getTableList()
         this.addDialogVisible = false
       })
@@ -274,34 +303,44 @@ export default {
       const { data: res } = await this.$http.get(`users/${id}`)
       this.updateForm = res.data
     },
-    deleteUser(id) {
-      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-        .then(async () => {
-          const { data: res } = await this.$http.delete(`users/${id}`)
-          if (res.meta.status == 200) {
-            this.$message({
-              type: 'success',
-              message: '删除成功!',
-            })
-            this.getTableList()
-          } else {
-            this.$message({
-              type: 'info',
-              message: '删除失败',
-            })
-          }
+    async deleteUser(id) {
+      const confirmRes = await this.$confirm(
+        '此操作将永久删除该用户, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      ).catch((err) => err)
+      if (confirmRes != 'confirm') return this.$message.info('取消了删除')
+      const { data: res } = await this.$http.delete(`users/${id}`)
+      if (res.meta.status == 200) {
+        this.$message({
+          type: 'success',
+          message: '删除成功!',
         })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          })
-        })
+        this.getTableList()
+      }
     },
+    async setRoleUser(role) {
+      this.setRoleDialogVisible = true;
+      this.roleInfo=role
+      const {data:res} = await this.$http.get('roles')
+      if(res.meta.status==200) {
+        this.setRoleList = res.data
+      }
+    },
+    async confirmRole() {
+      if(!this.curSelRoleId) return this.$message.error('角色不可以为空')
+      const {data:res} = await this.$http.put(`users/${this.roleInfo.id}/role`,{rid:this.curSelRoleId})
+      if(res.meta.status!=200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
+      this.getTableList()
+      this.setRoleDialogVisible = false
+    }
   },
   created() {
     this.getTableList()
