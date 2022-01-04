@@ -33,8 +33,8 @@ export default {
   data () {
     return {
       loginForm: {
-        username: 'zs',
-        password: '123'
+        username: 'admin',
+        password: '123456'
       },
       loginFormRules: {
         username: [{ required: true, message: '请输入名称', trigger: 'blur' }, { min: 3, max: 10, message: '长度在3 到 10 个字符', trigger: 'blur' }],
