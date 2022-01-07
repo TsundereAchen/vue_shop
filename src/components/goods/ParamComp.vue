@@ -31,7 +31,7 @@
             v-else
             class="button-new-tag"
             size="small"
-            @click="showInput"
+            @click="showInput(props.row)"
             >+ New Tag</el-button
           >
         </template>
@@ -76,8 +76,8 @@ export default {
     // 删除标签
     handleClose(tag) {},
     // 添加标签按钮点击
-    showInput() {
-      this.inputVisible = true
+    showInput(attrData) {
+      attrData.inputVisible = true
       this.$nextTick((_) => {
         this.$refs.saveTagInput.$refs.input.focus()
       })
@@ -86,23 +86,23 @@ export default {
     async handleInputConfirm(attrData) {
       let inputValue = attrData.inputValue
       if (inputValue) {
-        attrData.attr_vals.push(inputValue)
+        attrData.attr_vals.push(inputValue.trim())
         const str = attrData.attr_vals.join(' ')
-        const { data: res } = await this.$http.post(
-          `categories/${attrData.attr_id}/attributes`,
+        const { data: res } = await this.$http.put(
+          `categories/${attrData.attr_id}/attributes/${attrData.attr_id}`,
           {
             attr_name: attrData.attr_name,
             attr_sel: attrData.attr_sel,
             attr_vals: str,
           }
         )
-        if (res.meta.status != 201) {
+        if (res.meta.status != 200) {
           this.$message.error(res.meta.msg)
         } else {
         //   this.$emit('addTag',{id:attrData.attr_id,val:inputValue})
         }
       }
-      this.inputVisible = false
+      attrData.inputVisible = false
       attrData.inputValue = ''
     },
   },

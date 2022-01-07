@@ -111,7 +111,6 @@ export default {
           // 文本框输入的值
           item.inputValue = ''
       });
-      console.log(res.data)
       this.attrList = res.data
     },
     // 添加参数/添加属性

@@ -55,3 +55,7 @@ body, html, #app {
     margin-left: 10px;
     vertical-align: bottom;
   }
+
+  .el-checkbox {
+    margin: 0 10px 0 0;
+  }
